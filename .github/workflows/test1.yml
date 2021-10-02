@@ -17,3 +17,18 @@ jobs:
           echo Head ref: $GITHUB_HEAD_REF
           echo Base ref: $GITHUB_BASE_REF
           echo PR: ${{ github.event.issue.number }}
+      - name: Install jq
+        run: |
+          apt update
+          apt install jq
+      - name: Prepare for building the package
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        env:
+          PR_NUMBER: ${{github.event.issue.number}}
+        run: |
+          COMMIT_SHA=$(curl https://api.github.com/repos/${{github.repository}}/pulls/${{github.event.issue.number}} | jq .head.sha)
+          git clone https://github.com/${{github.repository}} .
+          git checkout $COMMIT_SHA
+          mkdir -p /var/lib/acbs
+          ln -s $PWD /var/lib/acbs/repo
+          sed -i 's/Null Packager <null@aosc.xyz>/GitHub Actions <discussions@lists.aosc.io>/' /etc/autobuild/ab3cfg.sh
