@@ -11,24 +11,30 @@ jobs:
     container: aosc/aosc-os-buildkit:latest
 
     steps:
+      - uses: actions/github-script@v5
+        id: get-head-sha
+        with:
+          script: |
+            const url = "https://api.github.com/repos/${{github.repository}}/pulls/${{github.event.issue.number}}"
+            console.log(url)
+            const result = await github.request(url)
+            console.log(result.head.sha)
+            return result.head.sha
+          result-encoding: string
+
       - name: Display ENV
         run: |
           echo Ref: $GITHUB_REF
           echo Head ref: $GITHUB_HEAD_REF
           echo Base ref: $GITHUB_BASE_REF
           echo PR: ${{ github.event.issue.number }}
-      - name: Install jq
-        run: |
-          apt update
-          apt install -y jq
       - name: Prepare for building the package
         working-directory: ${{env.GITHUB_WORKSPACE}}
         env:
           PR_NUMBER: ${{github.event.issue.number}}
         run: |
-          COMMIT_SHA=$(curl https://api.github.com/repos/${{github.repository}}/pulls/${{github.event.issue.number}} | jq -r .head.sha)
           git clone https://github.com/${{github.repository}} .
-          git checkout $COMMIT_SHA
+          git checkout ${{ steps.get-head-sha.outputs.result }}
           mkdir -p /var/lib/acbs
           ln -s $PWD /var/lib/acbs/repo
           sed -i 's/Null Packager <null@aosc.xyz>/GitHub Actions <discussions@lists.aosc.io>/' /etc/autobuild/ab3cfg.sh
