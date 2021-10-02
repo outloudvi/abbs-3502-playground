@@ -15,11 +15,13 @@ jobs:
         id: get-head-sha
         with:
           script: |
-            const url = "https://api.github.com/repos/${{github.repository}}/pulls/${{github.event.issue.number}}"
-            console.log(url)
-            const result = await github.request(url)
-            console.log(result.head.sha)
-            return result.head.sha
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            })
+            console.log(pr)
+            return pr.head.sha
           result-encoding: string
 
       - name: Display ENV
