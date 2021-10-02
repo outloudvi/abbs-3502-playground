@@ -35,8 +35,8 @@ jobs:
       - name: Prepare for building the package
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: |
-          git clone https://github.com/${{ steps.get-head-sha.outputs.result.repo }} .
-          git checkout ${{ steps.get-head-sha.outputs.result.sha }}
+          git clone https://github.com/${{ fromJson(steps.get-head-sha.outputs.result).repo }} .
+          git checkout ${{ fromJson(steps.get-head-sha.outputs.result).sha }}
           mkdir -p /var/lib/acbs
           ln -s $PWD /var/lib/acbs/repo
           sed -i 's/Null Packager <null@aosc.xyz>/GitHub Actions <discussions@lists.aosc.io>/' /etc/autobuild/ab3cfg.sh
