@@ -11,14 +11,15 @@ jobs:
     container: aosc/aosc-os-buildkit:latest
 
     steps:
-      - uses: actions/github-script@v5
+      - name: Get PR head commit
+        uses: actions/github-script@v5
         id: get-head-sha
         with:
           script: |
             const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
+              owner: "aosc-dev",
+              repo: "aosc-os-abbs",
+              pull_number: 3502,
             })
             return pr.data.head.sha
           result-encoding: string
@@ -31,11 +32,21 @@ jobs:
           echo PR: ${{ github.event.issue.number }}
       - name: Prepare for building the package
         working-directory: ${{env.GITHUB_WORKSPACE}}
-        env:
-          PR_NUMBER: ${{github.event.issue.number}}
         run: |
-          git clone https://github.com/${{github.repository}} .
+          git clone https://github.com/aosc-dev/aosc-os-abbs .
           git checkout ${{ steps.get-head-sha.outputs.result }}
           mkdir -p /var/lib/acbs
           ln -s $PWD /var/lib/acbs/repo
           sed -i 's/Null Packager <null@aosc.xyz>/GitHub Actions <discussions@lists.aosc.io>/' /etc/autobuild/ab3cfg.sh
+
+      - name: Build the package
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        env:
+          PACKAGE: uw-imap
+        run: script -eqc "acbs-build \"${{env.PACKAGE}}\""
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Packages
+          path: /debs
