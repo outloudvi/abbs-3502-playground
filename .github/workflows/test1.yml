@@ -1,0 +1,19 @@
+name: Test for ENV
+
+on:
+  issue_comment:
+    types: [created, edited]
+
+jobs:
+  build:
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    container: aosc/aosc-os-buildkit:latest
+
+    steps:
+      - name: Display ENV
+        runs: |
+          echo Ref: $GITHUB_REF
+          echo Head ref: $GITHUB_HEAD_REF
+          echo Base ref: $GITHUB_BASE_REF
+          echo PR: ${{ github.event.issue.number }}
