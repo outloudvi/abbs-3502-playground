@@ -20,7 +20,7 @@ jobs:
       - name: Install jq
         run: |
           apt update
-          apt install jq
+          apt install -y jq
       - name: Prepare for building the package
         working-directory: ${{env.GITHUB_WORKSPACE}}
         env:
