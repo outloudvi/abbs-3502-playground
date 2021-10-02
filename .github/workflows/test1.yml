@@ -26,7 +26,7 @@ jobs:
         env:
           PR_NUMBER: ${{github.event.issue.number}}
         run: |
-          COMMIT_SHA=$(curl https://api.github.com/repos/${{github.repository}}/pulls/${{github.event.issue.number}} | jq .head.sha)
+          COMMIT_SHA=$(curl https://api.github.com/repos/${{github.repository}}/pulls/${{github.event.issue.number}} | jq -r .head.sha)
           git clone https://github.com/${{github.repository}} .
           git checkout $COMMIT_SHA
           mkdir -p /var/lib/acbs
